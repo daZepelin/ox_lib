@@ -73,6 +73,10 @@ const ContextMenu: React.FC = () => {
     }
 
     const timeout = setTimeout(() => {
+      if (searchFieldInput === '') {
+        setFilteredOptions(contextMenu.options);
+        return;
+      }
       const filtered = Object.entries(contextMenu.options).filter((option) => {
         if (option[1].title && option[1].title.toLowerCase().includes(searchFieldInput.toLowerCase())) {
           return true;
@@ -92,7 +96,7 @@ const ContextMenu: React.FC = () => {
         clearTimeout(filterTimeout);
       }
     };
-  }, [searchFieldInput]);
+  }, [searchFieldInput, contextMenu.options]);
 
   // Hides the context menu on ESC
   useEffect(() => {
