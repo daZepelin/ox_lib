@@ -137,7 +137,10 @@ const ContextMenu: React.FC = () => {
             </Box>
             <HeaderButton icon="xmark" canClose={contextMenu.canClose} iconSize={18} handleClick={closeContext} />
           </Flex>
-          <TextInput placeholder="Search" onChange={(e) => setSearchFieldInput(e.target.value)} />
+          {
+            contextMenu.searchField &&
+            <TextInput placeholder="Search" onChange={(e) => setSearchFieldInput(e.target.value)} />
+          }
         </Flex>
         <Box className={classes.buttonsContainer}>
           <Stack className={classes.buttonsFlexWrapper}>

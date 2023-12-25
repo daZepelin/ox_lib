@@ -31,5 +31,6 @@ export interface ContextMenuProps {
   title: string;
   menu?: string;
   canClose?: boolean;
+  searchField?: boolean;
   options: Options | Option[];
 }
