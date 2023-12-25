@@ -1,5 +1,5 @@
 import { useNuiEvent } from '../../../hooks/useNuiEvent';
-import { Box, createStyles, Flex, Stack, Text } from '@mantine/core';
+import { Box, createStyles, Flex, Stack, Text, TextInput } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { ContextMenuProps } from '../../../typings';
 import ContextButton from './components/ContextButton';
@@ -22,10 +22,14 @@ const useStyles = createStyles((theme) => ({
     height: 580,
   },
   header: {
+    marginBottom: 10,
+    gap: 3,
+    flexDirection: 'column',
+  },
+  headerRowWrapper: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
-    gap: 6,
+    gap: 3,
   },
   titleContainer: {
     borderRadius: 4,
@@ -53,12 +57,42 @@ const ContextMenu: React.FC = () => {
     title: '',
     options: { '': { description: '', metadata: [] } },
   });
+  const [searchFieldInput, setSearchFieldInput] = useState('');
+  const [filteredOptions, setFilteredOptions] = useState(contextMenu.options);
+  const [filterTimeout, setFilterTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const closeContext = () => {
     if (contextMenu.canClose === false) return;
     setVisible(false);
     fetchNui('closeContext');
   };
+
+  useEffect(() => {
+    if (filterTimeout !== null) {
+      clearTimeout(filterTimeout);
+    }
+
+    const timeout = setTimeout(() => {
+      const filtered = Object.entries(contextMenu.options).filter((option) => {
+        if (option[1].title && option[1].title.toLowerCase().includes(searchFieldInput.toLowerCase())) {
+          return true;
+        }
+        if (option[1].description && option[1].description.toLowerCase().includes(searchFieldInput.toLowerCase())) {
+          return true;
+        }
+        return false;
+      });
+      setFilteredOptions(Object.fromEntries(filtered));
+    }, 500);
+
+    setFilterTimeout(timeout);
+
+    return () => {
+      if (filterTimeout !== null) {
+        clearTimeout(filterTimeout);
+      }
+    };
+  }, [searchFieldInput]);
 
   // Hides the context menu on ESC
   useEffect(() => {
@@ -88,19 +122,22 @@ const ContextMenu: React.FC = () => {
     <Box className={classes.container}>
       <ScaleFade visible={visible}>
         <Flex className={classes.header}>
-          {contextMenu.menu && (
-            <HeaderButton icon="chevron-left" iconSize={16} handleClick={() => openMenu(contextMenu.menu)} />
-          )}
-          <Box className={classes.titleContainer}>
-            <Text className={classes.titleText}>
-              <ReactMarkdown components={MarkdownComponents}>{contextMenu.title}</ReactMarkdown>
-            </Text>
-          </Box>
-          <HeaderButton icon="xmark" canClose={contextMenu.canClose} iconSize={18} handleClick={closeContext} />
+          <Flex className={classes.headerRowWrapper}>
+            {contextMenu.menu && (
+              <HeaderButton icon="chevron-left" iconSize={16} handleClick={() => openMenu(contextMenu.menu)} />
+            )}
+            <Box className={classes.titleContainer}>
+              <Text className={classes.titleText}>
+                <ReactMarkdown components={MarkdownComponents}>{contextMenu.title}</ReactMarkdown>
+              </Text>
+            </Box>
+            <HeaderButton icon="xmark" canClose={contextMenu.canClose} iconSize={18} handleClick={closeContext} />
+          </Flex>
+          <TextInput placeholder="Search" onChange={(e) => setSearchFieldInput(e.target.value)} />
         </Flex>
         <Box className={classes.buttonsContainer}>
           <Stack className={classes.buttonsFlexWrapper}>
-            {Object.entries(contextMenu.options).map((option, index) => (
+            {Object.entries(filteredOptions).map((option, index) => (
               <ContextButton option={option} key={`context-item-${index}`} />
             ))}
           </Stack>
