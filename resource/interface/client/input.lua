@@ -1,4 +1,5 @@
 local input
+local onChangeHandlers = {}
 
 ---@class InputDialogRowProps
 ---@field type 'input' | 'number' | 'checkbox' | 'select' | 'slider' | 'multi-select' | 'date' | 'date-range' | 'time' | 'textarea' | 'color'
@@ -37,6 +38,12 @@ function lib.inputDialog(heading, rows, options)
         if type(rows[i]) == 'string' then
             rows[i] = { type = 'input', label = rows[i] --[[@as string]] }
         end
+        if rows[i].onChange then
+            onChangeHandlers[i] = rows[i].onChange
+            rows[i].onChange = nil
+        else
+            onChangeHandlers[i] = false
+        end
     end
 
     lib.setNuiFocus(false)
@@ -72,4 +79,12 @@ RegisterNUICallback('inputData', function(data, cb)
     input = nil
 
     promise:resolve(data)
+end)
+
+RegisterNUICallback('onInputRowChange', function(data, cb)
+    cb(1)
+
+    if not onChangeHandlers[data.index] then return end
+
+    onChangeHandlers[data.index](data.value)
 end)

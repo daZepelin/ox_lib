@@ -1,9 +1,9 @@
 import { Button, Group, Modal, Stack } from '@mantine/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNuiEvent } from '../../hooks/useNuiEvent';
 import { useLocales } from '../../providers/LocaleProvider';
 import { fetchNui } from '../../utils/fetchNui';
-import type { InputProps } from '../../typings';
+import type { IInputRow, InputProps } from '../../typings';
 import { OptionValue } from '../../typings';
 import InputField from './components/fields/input';
 import CheckboxField from './components/fields/checkbox';
@@ -37,6 +37,12 @@ const InputDialog: React.FC = () => {
     name: 'test',
   });
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) =>
+    )
+    return () => subscription.unsubscribe()
+  }, [form.watch])
+
   useNuiEvent<InputProps>('openDialog', (data) => {
     setFields(data);
     setVisible(true);
@@ -67,6 +73,22 @@ const InputDialog: React.FC = () => {
   });
 
   useNuiEvent('closeInputDialog', async () => await handleClose(true));
+
+  useNuiEvent<{ index: number; row: IInputRow }>('updateInputRow', ({index, row}) => {
+    setFields((prev) => {
+      const newRows = [...prev.rows];
+      newRows[index] = row;
+      return { ...prev, rows: newRows };
+    });
+
+    if ('default' in row) {
+      form.setValue(`test.${index}.value`, row.default);
+    } else if ( 'checked' in row) {
+      form.setValue(`test.${index}.value`, row.checked);
+    } else {
+      form.setValue(`test.${index}.value`, null);
+    }
+  });
 
   const handleClose = async (dontPost?: boolean) => {
     setVisible(false);

@@ -2,7 +2,7 @@ import { IconProp } from '@fortawesome/fontawesome-svg-core';
 
 export interface InputProps {
   heading: string;
-  rows: Array<IInput | ICheckbox | ISelect | INumber | ISlider | IColorInput | IDateInput | ITextarea | ITimeInput>;
+  rows: Array<IInputRow>;
   options?: {
     allowCancel?: boolean;
   };
@@ -18,6 +18,8 @@ type BaseField<T, U> = {
   disabled?: boolean;
   required?: boolean;
 };
+
+export type IInputRow = IInput | ICheckbox | ISelect | INumber | ISlider | IColorInput | IDateInput | ITextarea | ITimeInput;
 
 export interface IInput extends BaseField<'input', string> {
   password?: boolean;
